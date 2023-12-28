@@ -1,76 +1,63 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <iostream>
+#include <queue>
+using namespace std;
 
-#define MAXN (10)
+#define MAXN ((int)1e4)
+
 int H, W;
 int map[MAXN+10][MAXN+10];
-int dr[8] = {0, 1, 1, 1, 0, -1, -1, -1};
-int dc[8] = {-1, -1, 0, -1, 1, 1, 0, -1};
-int rear=0;
-int front=0;
+int dr[]={0, 1, 1, 1, 0, -1, -1, -1};
+int dc[]={-1, -1, 0, -1, 1, 1, 1, 0, -1};
 
-struct node {
-	int r;
-	int c;
-	int d;
+struct QUE {
+	int r, c, d;
 };
 
-struct node queue[(MAXN+10)*(MAXN+10)];
+queue<QUE> que;
 
-
-void InputData(void) {
-	scanf("%d", &H);
-	scanf("%d", &W);
+void InputData() {
+	cin >> H >> W;
 	for(int i=0; i<H; i++) {
 		for(int j=0; j<W; j++) {
-			scanf("%d", &map[i][j]);
+			cin >> map[i][j];
 			map[i][j]++;
 		}
 	}
 }
 
-int DFS(int r, int c) {
+int BFS(int r, int c) {
 	if(map[r][c] != 2) return 0;
-	map[r][c] = 3;
+	map[r][c]=3;
 	int cnt=0;
 	for(int i=0; i<8; i++) {
-		cnt+= DFS(r+dr[i], c+dc[i]);
+		cnt+=BFS(r+dr[i], c+dc[i]);
 	}
-	if(cnt<8) {
-		map[r][c] = 3;
-		struct node ele = {r, c, 0};
-		queue[rear] = ele;
-		rear=(rear+1)%((MAXN+10)*(MAXN+10));
+	if(cnt<0) {
+		map[r][c]=3;
+		que.push({r, c, 0});
 	}
 	return 1;
 }
 
-int check_boundary(int r, int c) {
-	if((r>=0) && (r<H) && (c>=0) && (c<W)) return 1;
-	return 0;
-}
-
-int BFS(void) {
-	int cnt=0;
-	while(rear != front) {
-		struct node elem = queue[front];
-		front=(front+1)%((MAXN+10)*(MAXN+10));
-		map[elem.r][elem.c] = 1;
+int FloodFill() {
+	int cnt =0;
+	while(!que.empty()) {
+		QUE ele = que.front(); que.pop();
+		map[ele.r][ele.c] = 1;
 		cnt++;
 	}
+	
 	return cnt;
 }
 
-
-int Solve(void) {
-	int sol=0;
+int Solve() {
+	int sol=-1;
 	int max=0;
 	for(int i=0; i<H; i++) {
 		for(int j=0; j<W; j++) {
-			if(map[i][j] == 2) {
-				DFS(i, j);
-				sol = BFS();
+			if(map[i][j]==2) {
+				BFS(i, j);
+				sol=FloodFill();
 				if(sol > max) {
 					max = sol;
 				}
@@ -80,11 +67,13 @@ int Solve(void) {
 	return max;
 }
 
-
-int main(void) {
+int main() {
 	int ans=-1;
+	ios_base::sync_with_stdio(false);
+	cin.tie(NULL);
+	cout.tie(NULL);
 	InputData();
-	ans = Solve(); 
-	printf("%d\n", ans);
+	ans=Solve();
+	cout << ans << "\n";
 	return 0;
 }
